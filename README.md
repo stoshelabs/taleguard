@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="taleguard.png" alt="TaleGuard" width="720">
+  <img src="https://github.com/stoshelabs/taleguard/blob/main/taleguard.png?raw=true" alt="TaleGuard" width="720">
 </p>
 
 <p align="center">
