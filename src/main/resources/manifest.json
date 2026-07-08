@@ -1,0 +1,16 @@
+{
+    "Name": "TaleGuard",
+    "ID": "stoshe.taleguard",
+    "Group": "Stoshe",
+    "Version": "${version}",
+    "Authors": [
+        {
+            "Name": "Stoshe",
+            "Url": "https://github.com/stoshe"
+        }
+    ],
+    "Website": "https://stoshe.dev",
+    "Main": "dev.stoshe.taleguard.TaleGuardMixinBridgePlugin",
+    "ServerVersion": "*",
+    "Description": "TaleGuard — Mixin/transformer bridge for island protection."
+}

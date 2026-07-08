@@ -1,0 +1,28 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.stoshe.taleguard.mixin",
+  "plugin": "dev.stoshe.taleguard.mixin.TaleGuardMixinConfigPlugin",
+  "mixins": [
+    "HarvestCropInteractionMixin",
+    "ChangeFarmingStageInteractionMixin",
+    "PlayerItemEntityPickupSystemMixin",
+    "SeatingInteractionMixin",
+    "BlockHarvestUtilsMixin",
+    "BuilderToolsPacketHandlerMixin",
+    "ChangeStateInteractionMixin",
+    "CommandManagerMixin",
+    "CycleBlockGroupInteractionMixin",
+    "DeathItemDropMixin",
+    "DefaultFluidTickerMixin",
+    "ExplosionBlockDamageMixin",
+    "FiniteFluidTickerMixin",
+    "NPCPluginSpawnMixin",
+    "PlaceFluidInteractionMixin",
+    "SpawnMarkerEntityMixin",
+    "WorldSpawnJobSystemsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
