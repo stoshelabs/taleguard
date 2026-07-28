@@ -102,13 +102,3 @@ Add TaleGuard as an **optional dependency** so it loads first when present:
 ```jsonc
 "OptionalDependencies": { "Stoshe:stoshe.taleguard": "*" }
 ```
-
----
-
-## Credits
-
-- **Author:** [Stoshe](https://github.com/stoshe)
-- **Website:** https://stoshe.dev
-- **Repository:** https://github.com/stoshelabs/taleguard
-
-<sub>Built for Hytale. Companion minigame using it: <a href="https://github.com/stoshelabs/aerowars">AeroWars</a>.</sub>
