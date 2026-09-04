@@ -10,6 +10,6 @@
     ],
     "Website": "https://stoshe.dev",
     "Main": "dev.stoshe.taleguard.TaleGuardMixinBridgePlugin",
-    "ServerVersion": "*",
+    "ServerVersion": "${hytaleRange}",
     "Description": "TaleGuard — Mixin/transformer bridge for island protection."
 }
