@@ -23,19 +23,10 @@ public class WorldSpawnJobSystemsMixin {
         return context.canSpawn();
     }
 
-    @Redirect(method = "trySpawn", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/spawning/SpawningContext;canSpawn(ZZ)Lcom/hypixel/hytale/server/spawning/SpawnTestResult;"), require = 0)
-    private static SpawnTestResult taleguard$redirectCanSpawn2Arg(SpawningContext context, boolean testOverlapBlocks,
-            boolean testOverlapEntities) {
-        String taleguard$wn = taleguard$worldName(context);
-        if (context != null && taleguard$wn != null && !taleguard$checkAllowedNoNotify(null,
-                taleguard$wn,
-                (int) Math.floor(context.xSpawn),
-                (int) Math.floor(context.ySpawn),
-                (int) Math.floor(context.zSpawn), "MOB_SPAWN")) {
-            return SpawnTestResult.FAIL_INVALID_POSITION;
-        }
-        return context.canSpawn(testOverlapBlocks, testOverlapEntities);
-    }
+    // trySpawn only ever calls canSpawn(); the two-argument overload it used to
+    // reach lives in SpawnMarkerEntity.spawnNPC, which SpawnMarkerEntityMixin
+    // already guards. A redirect for it here could never bind, and with
+    // require = 0 that was silent.
 
     private static boolean taleguard$checkAllowedNoNotify(java.util.UUID playerUuid, String worldName, double x, double y, double z, String type) {
         try {

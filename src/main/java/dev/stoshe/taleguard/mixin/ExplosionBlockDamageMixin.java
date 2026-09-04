@@ -15,9 +15,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(com.hypixel.hytale.server.core.modules.interaction.BlockHarvestUtils.class)
 public abstract class ExplosionBlockDamageMixin {
 
-    @Redirect(method = "performBlockDamage(Lcom/hypixel/hytale/server/core/entity/LivingEntity;Lcom/hypixel/hytale/component/Ref;Lorg/joml/Vector3i;Lcom/hypixel/hytale/server/core/inventory/ItemStack;Lcom/hypixel/hytale/server/core/asset/type/item/config/ItemTool;Ljava/lang/String;ZFILcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/component/ComponentAccessor;Lcom/hypixel/hytale/component/ComponentAccessor;)Z", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/component/ComponentAccessor;getComponent(Lcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/component/ComponentType;)Lcom/hypixel/hytale/component/Component;"), require = 0)
+    @Redirect(method = "performBlockDamage(Lcom/hypixel/hytale/component/Ref;Lorg/joml/Vector3i;Lcom/hypixel/hytale/server/core/inventory/ItemStack;Lcom/hypixel/hytale/server/core/asset/type/item/config/ItemTool;Ljava/lang/String;ZFILcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/component/ComponentAccessor;Lcom/hypixel/hytale/component/ComponentAccessor;)Z", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/component/ComponentAccessor;getComponent(Lcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/component/ComponentType;)Lcom/hypixel/hytale/component/Component;"), require = 0)
     private static Object taleguard$guardExplosionChunkLookup(ComponentAccessor<ChunkStore> chunkAccessor,
-            Ref<ChunkStore> chunkRef, Object worldChunkType, LivingEntity entity, Ref<EntityStore> ref,
+            Ref<ChunkStore> chunkRef, Object worldChunkType, Ref<EntityStore> ref,
             Vector3i targetBlockPos, Object itemStack, Object tool, String toolId, boolean matchTool,
             float damageScale, int setBlockSettings, Ref<ChunkStore> chunkReference,
             ComponentAccessor<EntityStore> entityStore, ComponentAccessor<ChunkStore> chunkStore) {

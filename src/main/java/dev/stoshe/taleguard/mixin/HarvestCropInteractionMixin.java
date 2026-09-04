@@ -14,15 +14,16 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(com.hypixel.hytale.builtin.adventure.farming.interactions.HarvestCropInteraction.class)
 public abstract class HarvestCropInteractionMixin {
 
-    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/adventure/farming/FarmingUtil;harvest(Lcom/hypixel/hytale/server/core/universe/world/World;Lcom/hypixel/hytale/component/ComponentAccessor;Lcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/server/core/asset/type/blocktype/config/BlockType;ILorg/joml/Vector3i;)V"), require = 0)
-    private void taleguard$guardHarvest(World world, ComponentAccessor<EntityStore> accessor, Ref<EntityStore> ref,
+    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/adventure/farming/FarmingUtil;harvest(Lcom/hypixel/hytale/server/core/universe/world/World;Lcom/hypixel/hytale/component/ComponentAccessor;Lcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/server/core/asset/type/blocktype/config/BlockType;ILorg/joml/Vector3i;)Z"), require = 0)
+    private boolean taleguard$guardHarvest(World world, ComponentAccessor<EntityStore> accessor, Ref<EntityStore> ref,
             BlockType blockType, int rotation, Vector3i target) {
         PlayerRef playerRef = accessor.getComponent(ref, PlayerRef.getComponentType());
         if (playerRef != null
                 && !taleguard$checkAllowed(playerRef.getUuid(), world != null ? world.getName() : "", target.x, target.y, target.z, "CROP_HARVEST")) {
-            return;
+            // false is what harvest() returns when nothing was harvested.
+            return false;
         }
-        com.hypixel.hytale.builtin.adventure.farming.FarmingUtil.harvest(world, accessor, ref, blockType, rotation, target);
+        return com.hypixel.hytale.builtin.adventure.farming.FarmingUtil.harvest(world, accessor, ref, blockType, rotation, target);
     }
 
     private static boolean taleguard$checkAllowed(java.util.UUID playerUuid, String worldName, double x, double y, double z, String type) {

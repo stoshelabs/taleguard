@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(NPCPlugin.class)
 public class NPCPluginSpawnMixin {
 
-    @Redirect(method = "spawnEntity(Lcom/hypixel/hytale/component/Store;ILorg/joml/Vector3d;Lorg/joml/Vector3f;Lcom/hypixel/hytale/server/core/asset/type/model/config/Model;Lcom/hypixel/hytale/function/consumer/TriConsumer;Lcom/hypixel/hytale/function/consumer/TriConsumer;)Lit/unimi/dsi/fastutil/Pair;", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/component/Store;addEntity(Lcom/hypixel/hytale/component/Holder;Lcom/hypixel/hytale/component/AddReason;)Lcom/hypixel/hytale/component/Ref;"), require = 0)
+    @Redirect(method = "spawnEntity(Lcom/hypixel/hytale/component/Store;ILorg/joml/Vector3dc;Lcom/hypixel/hytale/math/vector/Rotation3fc;Lcom/hypixel/hytale/server/core/asset/type/model/config/Model;Lcom/hypixel/hytale/function/consumer/TriConsumer;Lcom/hypixel/hytale/function/consumer/TriConsumer;)Lit/unimi/dsi/fastutil/Pair;", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/component/Store;addEntity(Lcom/hypixel/hytale/component/Holder;Lcom/hypixel/hytale/component/AddReason;)Lcom/hypixel/hytale/component/Ref;"), require = 0)
     private Ref<EntityStore> taleguard$redirectAddEntity(Store<EntityStore> store, Holder<EntityStore> holder, AddReason reason) {
         TransformComponent transform = holder.getComponent(TransformComponent.getComponentType());
         Vector3d pos = transform != null ? transform.getPosition() : null;
