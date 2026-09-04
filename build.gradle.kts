@@ -12,7 +12,9 @@ java {
 }
 
 group = "dev.stoshe"
-version = "1.0.0"
+// Kept in gradle.properties so a release is one edit, and so two builds cannot
+// share a version the way 1.0.0 did while its contents moved on.
+version = (findProperty("version") as? String)?.takeIf { it.isNotBlank() && it != "unspecified" } ?: "1.1.0"
 
 val hytaleHome: String by extra {
     if (project.hasProperty("hytale_home")) {
