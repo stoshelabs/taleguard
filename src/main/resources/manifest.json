@@ -1,6 +1,5 @@
 {
     "Name": "TaleGuard",
-    "ID": "stoshe.taleguard",
     "Group": "Stoshe",
     "Version": "${version}",
     "Authors": [
