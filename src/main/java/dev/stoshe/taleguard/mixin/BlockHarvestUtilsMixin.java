@@ -9,7 +9,6 @@ import com.hypixel.hytale.server.core.entity.ItemUtils;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.interaction.BlockInteractionUtils;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -24,9 +23,10 @@ public abstract class BlockHarvestUtilsMixin {
     private static final ThreadLocal<Boolean> taleguard$denied = ThreadLocal.withInitial(() -> Boolean.FALSE);
     private static final ThreadLocal<Vector3i> taleguard$target = new ThreadLocal<>();
 
+    // 0.6 hands removeBlock the block's section too, so a denial can invalidate it directly.
     @Shadow
     protected static void removeBlock(Vector3i target, BlockType blockType, int setSettings, Ref<ChunkStore> chunkRef,
-            ComponentAccessor<ChunkStore> chunkAccessor) {
+            BlockSection section, ComponentAccessor<ChunkStore> chunkAccessor) {
         throw new UnsupportedOperationException("shadow");
     }
 
@@ -66,23 +66,20 @@ public abstract class BlockHarvestUtilsMixin {
         return BlockInteractionUtils.isNaturalAction(playerRefEntity, entityAccessor);
     }
 
-    @Redirect(method = "performPickupByInteraction", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/modules/interaction/BlockHarvestUtils;removeBlock(Lorg/joml/Vector3i;Lcom/hypixel/hytale/server/core/asset/type/blocktype/config/BlockType;ILcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/component/ComponentAccessor;)V"), require = 0)
+    @Redirect(method = "performPickupByInteraction", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/modules/interaction/BlockHarvestUtils;removeBlock(Lorg/joml/Vector3i;Lcom/hypixel/hytale/server/core/asset/type/blocktype/config/BlockType;ILcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/server/core/universe/world/chunk/section/BlockSection;Lcom/hypixel/hytale/component/ComponentAccessor;)V"), require = 0)
     private static void taleguard$guardRemoveBlock(Vector3i target, BlockType blockType, int setSettings,
-            Ref<ChunkStore> chunkRef, ComponentAccessor<ChunkStore> chunkAccessor) {
+            Ref<ChunkStore> chunkRef, BlockSection section, ComponentAccessor<ChunkStore> chunkAccessor) {
         if (Boolean.TRUE.equals(taleguard$denied.get())) {
+            // Denied: keep the block, and invalidate it so the client's predicted removal is resent and rolled back.
             try {
-                BlockChunk chunk = chunkAccessor.getComponent(chunkRef, BlockChunk.getComponentType());
-                if (chunk != null) {
-                    BlockSection section = chunk.getSectionAtBlockY(target.y);
-                    if (section != null) {
-                        section.invalidateBlock(target.x, target.y, target.z);
-                    }
+                if (section != null) {
+                    section.invalidateBlock(target.x, target.y, target.z);
                 }
             } catch (Exception ignored) {
             }
             return;
         }
-        removeBlock(target, blockType, setSettings, chunkRef, chunkAccessor);
+        removeBlock(target, blockType, setSettings, chunkRef, section, chunkAccessor);
     }
 
     @Redirect(method = "performPickupByInteraction", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/entity/ItemUtils;interactivelyPickupItem(Lcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/server/core/inventory/ItemStack;Lorg/joml/Vector3d;Lcom/hypixel/hytale/component/ComponentAccessor;)V"), require = 0)

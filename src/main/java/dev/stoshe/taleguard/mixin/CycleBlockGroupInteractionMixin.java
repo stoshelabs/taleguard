@@ -18,8 +18,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.CycleBlockGroupInteraction.class)
 public abstract class CycleBlockGroupInteractionMixin {
 
-    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/universe/world/storage/ChunkStore;getChunkReference(J)Lcom/hypixel/hytale/component/Ref;"), require = 0)
-    private Ref<?> taleguard$guardChunkRef(ChunkStore chunkStore, long chunkIndex, World world,
+    // 0.6 resolves the block through its chunk section instead of the chunk, and returns early when that lookup
+    // comes back null — so returning null is how a denial stops the hammer cycling the block.
+    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/universe/world/storage/ChunkStore;getChunkSectionReferenceAtBlock(III)Lcom/hypixel/hytale/component/Ref;"), require = 0)
+    private Ref<?> taleguard$guardChunkSection(ChunkStore chunkStore, int x, int y, int z, World world,
             CommandBuffer<EntityStore> buffer, InteractionType interactionType, InteractionContext ctx,
             ItemStack itemStack, Vector3i target, CooldownHandler cooldown) {
         if (ctx != null && ctx.getEntity() != null && target != null) {
@@ -30,7 +32,7 @@ public abstract class CycleBlockGroupInteractionMixin {
                 return null;
             }
         }
-        return chunkStore.getChunkReference(chunkIndex);
+        return chunkStore.getChunkSectionReferenceAtBlock(x, y, z);
     }
 
     private static boolean taleguard$checkAllowed(java.util.UUID playerUuid, String worldName, double x, double y, double z, String type) {

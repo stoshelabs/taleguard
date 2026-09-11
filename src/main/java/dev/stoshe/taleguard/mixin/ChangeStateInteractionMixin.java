@@ -1,6 +1,7 @@
 package dev.stoshe.taleguard.mixin;
 
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Ref;
 import org.joml.Vector3i;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
@@ -8,7 +9,7 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,19 +18,21 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.ChangeStateInteraction.class)
 public abstract class ChangeStateInteractionMixin {
 
-    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/universe/world/World;getChunkIfInMemory(J)Lcom/hypixel/hytale/server/core/universe/world/chunk/WorldChunk;"), require = 0)
-    private WorldChunk taleguard$guardChunkLookup(World world, long chunkIndex, World worldArg,
+    // 0.6 resolves the block through its chunk section instead of the in-memory chunk, and fails the interaction
+    // when that lookup comes back null — so returning null is how a denial stops the state change.
+    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/universe/world/storage/ChunkStore;getChunkSectionReferenceAtBlock(III)Lcom/hypixel/hytale/component/Ref;"), require = 0)
+    private Ref<?> taleguard$guardStateSection(ChunkStore chunkStore, int x, int y, int z, World world,
             CommandBuffer<EntityStore> buffer, InteractionType interactionType, InteractionContext ctx,
             ItemStack itemStack, Vector3i target, CooldownHandler cooldown) {
         if (ctx != null && ctx.getEntity() != null && target != null) {
             PlayerRef playerRef = buffer.getComponent(ctx.getEntity(), PlayerRef.getComponentType());
             if (playerRef != null
-                    && !taleguard$checkAllowed(playerRef.getUuid(), worldArg != null ? worldArg.getName() : "", target.x, target.y,
+                    && !taleguard$checkAllowed(playerRef.getUuid(), world != null ? world.getName() : "", target.x, target.y,
                             target.z, "INTERACT")) {
                 return null;
             }
         }
-        return world.getChunkIfInMemory(chunkIndex);
+        return chunkStore.getChunkSectionReferenceAtBlock(x, y, z);
     }
 
     private static boolean taleguard$checkAllowed(java.util.UUID playerUuid, String worldName, double x, double y, double z, String type) {

@@ -1,13 +1,14 @@
 package dev.stoshe.taleguard.mixin;
 
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,18 +18,20 @@ import org.joml.Vector3i;
 @Mixin(com.hypixel.hytale.builtin.adventure.farming.interactions.ChangeFarmingStageInteraction.class)
 public abstract class ChangeFarmingStageInteractionMixin {
 
-    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/universe/world/World;getChunk(J)Lcom/hypixel/hytale/server/core/universe/world/chunk/WorldChunk;"), require = 0)
-    private WorldChunk taleguard$guardFarmingChunk(World world, long chunkIndex, World worldArg,
+    // 0.6 no longer loads the chunk: it resolves the block's chunk section and gives up — logging a warning and
+    // failing the interaction — when that lookup comes back null. Returning null is how a denial stops it.
+    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/server/core/universe/world/storage/ChunkStore;getChunkSectionReferenceAtBlock(III)Lcom/hypixel/hytale/component/Ref;"), require = 0)
+    private Ref<?> taleguard$guardFarmingSection(ChunkStore chunkStore, int x, int y, int z, World world,
             CommandBuffer<EntityStore> buffer, InteractionType interactionType, InteractionContext ctx,
             ItemStack itemStack, Vector3i target, CooldownHandler cooldown) {
         if (ctx != null && ctx.getEntity() != null && target != null) {
             PlayerRef playerRef = buffer.getComponent(ctx.getEntity(), PlayerRef.getComponentType());
             if (playerRef != null
-                    && !taleguard$checkAllowed(playerRef.getUuid(), worldArg != null ? worldArg.getName() : "", target.x, target.y, target.z, "CROP_HARVEST")) {
+                    && !taleguard$checkAllowed(playerRef.getUuid(), world != null ? world.getName() : "", target.x, target.y, target.z, "CROP_HARVEST")) {
                 return null;
             }
         }
-        return world.getChunk(chunkIndex);
+        return chunkStore.getChunkSectionReferenceAtBlock(x, y, z);
     }
 
     private static boolean taleguard$checkAllowed(java.util.UUID playerUuid, String worldName, double x, double y, double z, String type) {

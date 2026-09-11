@@ -9,6 +9,7 @@
     "PlayerItemEntityPickupSystemMixin",
     "SeatingInteractionMixin",
     "BlockHarvestUtilsMixin",
+    "BreakBlockInteractionMixin",
     "BuilderToolsPacketHandlerMixin",
     "ChangeStateInteractionMixin",
     "CommandManagerMixin",

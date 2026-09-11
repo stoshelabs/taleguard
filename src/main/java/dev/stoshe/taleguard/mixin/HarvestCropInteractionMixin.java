@@ -2,9 +2,8 @@ package dev.stoshe.taleguard.mixin;
 
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.joml.Vector3i;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,16 +13,21 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(com.hypixel.hytale.builtin.adventure.farming.interactions.HarvestCropInteraction.class)
 public abstract class HarvestCropInteractionMixin {
 
-    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/adventure/farming/FarmingUtil;harvest(Lcom/hypixel/hytale/server/core/universe/world/World;Lcom/hypixel/hytale/component/ComponentAccessor;Lcom/hypixel/hytale/component/Ref;Lcom/hypixel/hytale/server/core/asset/type/blocktype/config/BlockType;ILorg/joml/Vector3i;)Z"), require = 0)
-    private boolean taleguard$guardHarvest(World world, ComponentAccessor<EntityStore> accessor, Ref<EntityStore> ref,
-            BlockType blockType, int rotation, Vector3i target) {
+    // 0.6 dropped the World, block type and rotation from harvest(): it takes the chunk-store accessor first and
+    // looks the block up itself, so the world name comes from the entity store instead.
+    @Redirect(method = "interactWithBlock", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/adventure/farming/FarmingUtil;harvest(Lcom/hypixel/hytale/component/ComponentAccessor;Lcom/hypixel/hytale/component/ComponentAccessor;Lcom/hypixel/hytale/component/Ref;Lorg/joml/Vector3i;)Z"), require = 0)
+    private boolean taleguard$guardHarvest(ComponentAccessor<ChunkStore> chunkAccessor,
+            ComponentAccessor<EntityStore> accessor, Ref<EntityStore> ref, Vector3i target) {
         PlayerRef playerRef = accessor.getComponent(ref, PlayerRef.getComponentType());
-        if (playerRef != null
-                && !taleguard$checkAllowed(playerRef.getUuid(), world != null ? world.getName() : "", target.x, target.y, target.z, "CROP_HARVEST")) {
-            // false is what harvest() returns when nothing was harvested.
-            return false;
+        if (playerRef != null && target != null) {
+            Object external = accessor.getExternalData();
+            String worldName = external instanceof EntityStore es && es.getWorld() != null ? es.getWorld().getName() : "";
+            if (!taleguard$checkAllowed(playerRef.getUuid(), worldName, target.x, target.y, target.z, "CROP_HARVEST")) {
+                // false is what harvest() returns when nothing was harvested.
+                return false;
+            }
         }
-        return com.hypixel.hytale.builtin.adventure.farming.FarmingUtil.harvest(world, accessor, ref, blockType, rotation, target);
+        return com.hypixel.hytale.builtin.adventure.farming.FarmingUtil.harvest(chunkAccessor, accessor, ref, target);
     }
 
     private static boolean taleguard$checkAllowed(java.util.UUID playerUuid, String worldName, double x, double y, double z, String type) {

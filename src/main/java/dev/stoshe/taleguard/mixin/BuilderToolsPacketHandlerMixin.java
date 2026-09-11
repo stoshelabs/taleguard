@@ -30,36 +30,38 @@ public abstract class BuilderToolsPacketHandlerMixin {
         BuilderToolsPlugin.addToQueue(player, playerRef, op);
     }
 
-    @Redirect(method = "handleBuilderToolPasteClipboard", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/buildertools/BuilderToolsPlugin;addToQueue(Lcom/hypixel/hytale/server/core/entity/entities/Player;Lcom/hypixel/hytale/server/core/universe/PlayerRef;Lcom/hypixel/hytale/sneakythrow/consumer/ThrowableTriConsumer;)V"), require = 0)
-    private void taleguard$guardPaste(Player player, PlayerRef playerRef, ThrowableTriConsumer op,
+    // Paste, extrude, line and stack queue through the 0.6 addToQueue overload that carries an extra long; it is
+    // passed straight through. On-use above still calls the three-argument one.
+    @Redirect(method = "handleBuilderToolPasteClipboard", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/buildertools/BuilderToolsPlugin;addToQueue(Lcom/hypixel/hytale/server/core/entity/entities/Player;Lcom/hypixel/hytale/server/core/universe/PlayerRef;JLcom/hypixel/hytale/sneakythrow/consumer/ThrowableTriConsumer;)V"), require = 0)
+    private void taleguard$guardPaste(Player player, PlayerRef playerRef, long queueArg, ThrowableTriConsumer op,
             BuilderToolPasteClipboard packet) {
         if (taleguard$deny(playerRef, packet.x, packet.y, packet.z)) {
             return;
         }
-        BuilderToolsPlugin.addToQueue(player, playerRef, op);
+        BuilderToolsPlugin.addToQueue(player, playerRef, queueArg, op);
     }
 
-    @Redirect(method = "handleBuilderToolExtrudeAction", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/buildertools/BuilderToolsPlugin;addToQueue(Lcom/hypixel/hytale/server/core/entity/entities/Player;Lcom/hypixel/hytale/server/core/universe/PlayerRef;Lcom/hypixel/hytale/sneakythrow/consumer/ThrowableTriConsumer;)V"), require = 0)
-    private void taleguard$guardExtrude(Player player, PlayerRef playerRef, ThrowableTriConsumer op,
+    @Redirect(method = "handleBuilderToolExtrudeAction", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/buildertools/BuilderToolsPlugin;addToQueue(Lcom/hypixel/hytale/server/core/entity/entities/Player;Lcom/hypixel/hytale/server/core/universe/PlayerRef;JLcom/hypixel/hytale/sneakythrow/consumer/ThrowableTriConsumer;)V"), require = 0)
+    private void taleguard$guardExtrude(Player player, PlayerRef playerRef, long queueArg, ThrowableTriConsumer op,
             BuilderToolExtrudeAction packet) {
         if (taleguard$deny(playerRef, packet.x, packet.y, packet.z)) {
             return;
         }
-        BuilderToolsPlugin.addToQueue(player, playerRef, op);
+        BuilderToolsPlugin.addToQueue(player, playerRef, queueArg, op);
     }
 
-    @Redirect(method = "handleBuilderToolLineAction", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/buildertools/BuilderToolsPlugin;addToQueue(Lcom/hypixel/hytale/server/core/entity/entities/Player;Lcom/hypixel/hytale/server/core/universe/PlayerRef;Lcom/hypixel/hytale/sneakythrow/consumer/ThrowableTriConsumer;)V"), require = 0)
-    private void taleguard$guardLine(Player player, PlayerRef playerRef, ThrowableTriConsumer op,
+    @Redirect(method = "handleBuilderToolLineAction", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/buildertools/BuilderToolsPlugin;addToQueue(Lcom/hypixel/hytale/server/core/entity/entities/Player;Lcom/hypixel/hytale/server/core/universe/PlayerRef;JLcom/hypixel/hytale/sneakythrow/consumer/ThrowableTriConsumer;)V"), require = 0)
+    private void taleguard$guardLine(Player player, PlayerRef playerRef, long queueArg, ThrowableTriConsumer op,
             BuilderToolLineAction packet) {
         if (taleguard$deny(playerRef, packet.xStart, packet.yStart, packet.zStart)
                 || taleguard$deny(playerRef, packet.xEnd, packet.yEnd, packet.zEnd)) {
             return;
         }
-        BuilderToolsPlugin.addToQueue(player, playerRef, op);
+        BuilderToolsPlugin.addToQueue(player, playerRef, queueArg, op);
     }
 
-    @Redirect(method = "handleBuilderToolStackArea", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/buildertools/BuilderToolsPlugin;addToQueue(Lcom/hypixel/hytale/server/core/entity/entities/Player;Lcom/hypixel/hytale/server/core/universe/PlayerRef;Lcom/hypixel/hytale/sneakythrow/consumer/ThrowableTriConsumer;)V"), require = 0)
-    private void taleguard$guardStack(Player player, PlayerRef playerRef, ThrowableTriConsumer op,
+    @Redirect(method = "handleBuilderToolStackArea", at = @At(value = "INVOKE", target = "Lcom/hypixel/hytale/builtin/buildertools/BuilderToolsPlugin;addToQueue(Lcom/hypixel/hytale/server/core/entity/entities/Player;Lcom/hypixel/hytale/server/core/universe/PlayerRef;JLcom/hypixel/hytale/sneakythrow/consumer/ThrowableTriConsumer;)V"), require = 0)
+    private void taleguard$guardStack(Player player, PlayerRef playerRef, long queueArg, ThrowableTriConsumer op,
             BuilderToolStackArea packet) {
         BlockPosition min = packet.selectionMin;
         BlockPosition max = packet.selectionMax;
@@ -69,7 +71,7 @@ public abstract class BuilderToolsPacketHandlerMixin {
         if (max != null && taleguard$deny(playerRef, max.x, max.y, max.z)) {
             return;
         }
-        BuilderToolsPlugin.addToQueue(player, playerRef, op);
+        BuilderToolsPlugin.addToQueue(player, playerRef, queueArg, op);
     }
 
     private boolean taleguard$deny(PlayerRef playerRef, int x, int y, int z) {
