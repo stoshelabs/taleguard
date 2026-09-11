@@ -4,12 +4,12 @@
     "Version": "${version}",
     "Authors": [
         {
-            "Name": "Stoshe",
-            "Url": "https://github.com/stoshe"
+            "Name": "Stoshe Labs",
+            "Url": "https://github.com/stoshelabs"
         }
     ],
-    "Website": "https://stoshe.dev",
+    "Website": "https://github.com/stoshelabs/taleguard",
     "Main": "dev.stoshe.taleguard.TaleGuardMixinBridgePlugin",
     "ServerVersion": "${hytaleRange}",
-    "Description": "TaleGuard — Mixin/transformer bridge for island protection."
+    "Description": "TaleGuard — a Mixin protection bridge: routes the interactions Hytale's event API can't cancel through one shared hook, for region, island and minigame protection."
 }
