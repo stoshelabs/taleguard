@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="taleguard.png" alt="TaleGuard" width="720">
+  <img src="https://github.com/stoshelabs/taleguard/blob/main/taleguard.png?raw=true" alt="TaleGuard" width="720">
 </p>
 
 <p align="center">
@@ -137,12 +137,3 @@ by `Group:Name`:
 ```jsonc
 "OptionalDependencies": { "Stoshe:TaleGuard": "*" }
 ```
-
----
-
-## Credits
-
-- **Author:** [Stoshe Labs](https://github.com/stoshelabs)
-- **Repository:** https://github.com/stoshelabs/taleguard
-
-<sub>Built for Hytale. Companion minigame using it: <a href="https://github.com/stoshelabs/aerowars">AeroWars</a>.</sub>
