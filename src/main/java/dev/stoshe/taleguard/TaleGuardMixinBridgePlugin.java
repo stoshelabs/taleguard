@@ -4,20 +4,20 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import dev.stoshe.taleguard.runtime.MixinTargetAudit;
+import dev.stoshe.taleguard.runtime.RedirectAudit;
 
 import javax.annotation.Nonnull;
 import java.util.logging.Level;
 
 /**
  * Bridge plugin entrypoint for runtime diagnostics/state flags.
+ *
+ * <p>The server only starts this when the jar is also in {@code mods/}. From {@code earlyplugins/} alone it runs
+ * just {@link TaleGuardMixinBridgeTransformer}, which audits the redirects itself.</p>
  */
 public final class TaleGuardMixinBridgePlugin extends JavaPlugin {
     private static final String ACTIVE_PROPERTY = "taleguard.bridge.active";
     private static final String BOOTSTRAP_READY_PROPERTY = "taleguard.bridge.bootstrap.ready";
-    /** How many redirects were checked, and how many of those will not apply. */
-    private static final String AUDIT_PROPERTY = "taleguard.redirects.audit";
-    /** The guards that will not apply here, semicolon separated. Empty when clean. */
-    private static final String AUDIT_BROKEN_PROPERTY = "taleguard.redirects.broken";
 
     public TaleGuardMixinBridgePlugin(@Nonnull JavaPluginInit init) {
         super(init);
@@ -54,26 +54,14 @@ public final class TaleGuardMixinBridgePlugin extends JavaPlugin {
      */
     private void auditRedirects() {
         try {
-            MixinTargetAudit.Result result = new MixinTargetAudit(getClass().getClassLoader())
-                    .audit(MIXIN_PACKAGE, MIXIN_CLASSES);
-
-            System.setProperty(AUDIT_PROPERTY, result.broken().size() + "/" + result.checked());
-
+            MixinTargetAudit.Result result = RedirectAudit.run(getClass().getClassLoader());
             if (result.isClean()) {
-                System.setProperty(AUDIT_BROKEN_PROPERTY, "");
                 getLogger().at(Level.INFO).log("TaleGuard: " + MixinTargetAudit.summarise(result));
                 return;
             }
-
-            StringBuilder names = new StringBuilder();
             for (MixinTargetAudit.Broken broken : result.broken()) {
-                if (names.length() > 0) {
-                    names.append(';');
-                }
-                names.append(broken.mixin());
                 getLogger().at(Level.SEVERE).log("TaleGuard guard will not apply: " + broken);
             }
-            System.setProperty(AUDIT_BROKEN_PROPERTY, names.toString());
             getLogger().at(Level.SEVERE).log("TaleGuard: " + MixinTargetAudit.summarise(result)
                     + ". The flags behind them are NOT enforced on this server.");
         } catch (Throwable t) {
@@ -81,26 +69,4 @@ public final class TaleGuardMixinBridgePlugin extends JavaPlugin {
             getLogger().at(Level.WARNING).log("TaleGuard could not audit its redirects", t);
         }
     }
-
-    private static final String MIXIN_PACKAGE = "dev.stoshe.taleguard.mixin";
-
-    /** Mirrors taleguard.mixin.json. */
-    private static final java.util.List<String> MIXIN_CLASSES = java.util.List.of(
-            "HarvestCropInteractionMixin",
-            "ChangeFarmingStageInteractionMixin",
-            "PlayerItemEntityPickupSystemMixin",
-            "SeatingInteractionMixin",
-            "BlockHarvestUtilsMixin",
-            "BuilderToolsPacketHandlerMixin",
-            "ChangeStateInteractionMixin",
-            "CommandManagerMixin",
-            "CycleBlockGroupInteractionMixin",
-            "DeathItemDropMixin",
-            "DefaultFluidTickerMixin",
-            "ExplosionBlockDamageMixin",
-            "FiniteFluidTickerMixin",
-            "NPCPluginSpawnMixin",
-            "PlaceFluidInteractionMixin",
-            "SpawnMarkerEntityMixin",
-            "WorldSpawnJobSystemsMixin");
 }

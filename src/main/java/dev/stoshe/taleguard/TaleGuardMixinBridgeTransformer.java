@@ -4,6 +4,8 @@ import com.hypixel.hytale.plugin.early.ClassTransformer;
 import dev.stoshe.taleguard.runtime.LaunchEnvironment;
 import dev.stoshe.taleguard.runtime.MixinBootstrapService;
 import dev.stoshe.taleguard.runtime.MixinServiceImpl;
+import dev.stoshe.taleguard.runtime.MixinTargetAudit;
+import dev.stoshe.taleguard.runtime.RedirectAudit;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
@@ -51,6 +53,28 @@ public final class TaleGuardMixinBridgeTransformer implements ClassTransformer {
         String version = readVersion();
         System.out.println("[TaleGuard] Loaded as EARLY PLUGIN (ClassTransformer) (v" + version + ").");
         System.out.println("[TaleGuard] Early mixin bootstrap is active.");
+        auditRedirects();
+    }
+
+    /**
+     * Checks every guard against this server's bytecode and says so in the boot log (see {@link RedirectAudit}).
+     * A diagnostic: it must never be the reason the bridge fails to start.
+     */
+    private static void auditRedirects() {
+        try {
+            MixinTargetAudit.Result result = RedirectAudit.run(TaleGuardMixinBridgeTransformer.class.getClassLoader());
+            if (result.isClean()) {
+                System.out.println("[TaleGuard] " + MixinTargetAudit.summarise(result) + ".");
+                return;
+            }
+            for (MixinTargetAudit.Broken broken : result.broken()) {
+                System.err.println("[TaleGuard] Guard will not apply: " + broken);
+            }
+            System.err.println("[TaleGuard] " + MixinTargetAudit.summarise(result)
+                    + ". The flags behind them are NOT enforced on this server.");
+        } catch (Throwable t) {
+            System.err.println("[TaleGuard] Could not audit its redirects: " + t);
+        }
     }
 
     @Override
